@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Best Fighting</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <h1>BEST FIGHTING</h1>
+      <p class="subtitle">Oldschool pixel brawler - Office Arena</p>
+
+      <section id="menu" class="panel">
+        <h2>Create or Join Room</h2>
+        <div class="fighters" id="fighterCards"></div>
+
+        <div class="room-controls">
+          <button id="createRoomBtn">Create Room</button>
+          <input id="roomCodeInput" maxlength="6" placeholder="ROOM ID" />
+          <button id="joinRoomBtn">Join Room</button>
+        </div>
+        <p id="comboHint" class="hint"></p>
+      </section>
+
+      <section id="lobby" class="panel hidden">
+        <h2>Lobby</h2>
+        <p>Room: <strong id="roomCodeLabel"></strong></p>
+        <p id="lobbyStatus">Waiting...</p>
+      </section>
+
+      <section id="gamePanel" class="panel hidden">
+        <div class="hud">
+          <div>
+            <span id="p1Name"></span>
+            <div class="hp-wrap"><div id="p1Hp" class="hp"></div></div>
+            <span id="p1Wins"></span>
+          </div>
+          <div class="center-hud">
+            <span id="roundTimer">60</span>
+            <div id="announcement">Fight!</div>
+          </div>
+          <div>
+            <span id="p2Name"></span>
+            <div class="hp-wrap"><div id="p2Hp" class="hp"></div></div>
+            <span id="p2Wins"></span>
+          </div>
+        </div>
+        <canvas id="game" width="960" height="540"></canvas>
+        <p class="hint">Controls: A/D move, W jump, S crouch, F hand kick, G leg kick, combo for special.</p>
+      </section>
+
+      <p id="status" class="status">Connecting...</p>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
