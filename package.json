@@ -1,0 +1,9 @@
+{
+  "name": "best-fighting",
+  "version": "1.0.0",
+  "description": "Best Fighting - browser based 2D pixel fighting game with WebRTC multiplayer",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
