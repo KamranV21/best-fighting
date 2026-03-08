@@ -46,3 +46,4 @@ Open two browser tabs/windows at `http://localhost:3000`:
 
 - The host client runs authoritative simulation and streams snapshots to guest over WebRTC.
 - Signaling uses REST endpoints with short polling relayed by `server.js`.
+- For GitHub Pages deployments, point the client to a hosted signaling API using `?api=https://your-api-host/` once; the game stores this value in `localStorage` for later visits.
