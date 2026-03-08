@@ -40,12 +40,30 @@ function makeInitialGameState() {
 }
 
 async function api(path, body, method = 'POST') {
+  const requestUrl = new URL(path.replace(/^\//, ''), getApiBaseUrl()).toString();
   const options = { method, headers: { 'Content-Type': 'application/json' } };
   if (method !== 'GET') options.body = JSON.stringify(body || {});
-  const res = await fetch(path, options);
+  const res = await fetch(requestUrl, options);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
+}
+
+function getApiBaseUrl() {
+  const queryApi = new URLSearchParams(window.location.search).get('api');
+  if (queryApi) {
+    localStorage.setItem('bestFightingApiBase', queryApi);
+    return ensureTrailingSlash(queryApi);
+  }
+
+  const persistedApi = localStorage.getItem('bestFightingApiBase');
+  if (persistedApi) return ensureTrailingSlash(persistedApi);
+
+  return ensureTrailingSlash(window.location.href);
+}
+
+function ensureTrailingSlash(url) {
+  return url.endsWith('/') ? url : `${url}/`;
 }
 
 function renderFighterCards() {
@@ -293,7 +311,9 @@ document.getElementById('joinRoomBtn').onclick = async () => {
 };
 
 window.addEventListener('beforeunload', () => {
-  if (state.clientId) navigator.sendBeacon('/api/leave', JSON.stringify({ clientId: state.clientId }));
+  if (state.clientId) {
+    navigator.sendBeacon(new URL('api/leave', getApiBaseUrl()).toString(), JSON.stringify({ clientId: state.clientId }));
+  }
 });
 
 renderFighterCards(); bindControls(); requestAnimationFrame(tick); initSession();
