@@ -1,11 +1,11 @@
 # Best Fighting
 
-Best Fighting is a browser-based 2D pixel-style oldschool fighting game inspired by arcade classics. It supports online 1v1 play via WebRTC data channels, with room creation and signaling handled by a lightweight Node signaling API.
+Best Fighting is a browser-based 2D pixel-style oldschool fighting game inspired by arcade classics. The game now runs as an **offline-only local VS experience** with both players on the same machine.
 
 ## Features
 
-- **Online multiplayer (2 players)** using WebRTC data channels.
-- **Room flow**: create room -> join room -> both choose fighters -> match starts.
+- **Offline local multiplayer (2 players, same keyboard)**.
+- **No online signaling or WebRTC required**.
 - **3 playable fighters**:
   - Samir Mugimov
   - Isa Zeynalzade
@@ -22,12 +22,23 @@ Best Fighting is a browser-based 2D pixel-style oldschool fighting game inspired
 
 ## Controls
 
+### Player 1
+
 - `A` - move left
 - `D` - move right
 - `W` - jump
 - `S` - crouch
 - `F` - hand kick
 - `G` - leg kick
+
+### Player 2
+
+- `←` - move left
+- `→` - move right
+- `↑` - jump
+- `↓` - crouch
+- `Numpad 1` - hand kick
+- `Numpad 2` - leg kick
 
 ## Run locally
 
@@ -36,14 +47,4 @@ npm install
 npm start
 ```
 
-Open two browser tabs/windows at `http://localhost:3000`:
-
-1. Player 1 creates room and selects fighter.
-2. Player 2 joins room by code and selects fighter.
-3. Match starts automatically after WebRTC peer connection is ready.
-
-## Notes
-
-- The host client runs authoritative simulation and streams snapshots to guest over WebRTC.
-- Signaling uses REST endpoints with short polling relayed by `server.js`.
-- For GitHub Pages deployments, point the client to a hosted signaling API using `?api=https://your-api-host/` once; the game stores this value in `localStorage` for later visits.
+Open `http://localhost:3000`, choose fighters for both players, and start the offline match.
