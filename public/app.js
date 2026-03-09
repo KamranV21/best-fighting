@@ -14,6 +14,9 @@ const roomCodeInput = document.getElementById('roomCodeInput');
 const roomCodeLabel = document.getElementById('roomCodeLabel');
 const lobbyStatus = document.getElementById('lobbyStatus');
 const announcementEl = document.getElementById('announcement');
+const apiBaseInput = document.getElementById('apiBaseInput');
+const saveApiBtn = document.getElementById('saveApiBtn');
+const apiHintEl = document.getElementById('apiHint');
 const timerEl = document.getElementById('roundTimer');
 const p1Name = document.getElementById('p1Name');
 const p2Name = document.getElementById('p2Name');
@@ -39,13 +42,58 @@ function makeInitialGameState() {
   ]};
 }
 
+let apiConfig = resolveApiConfig();
+
 async function api(path, body, method = 'POST') {
+  if (!apiConfig.baseUrl) throw new Error(apiConfig.error);
+  const requestUrl = new URL(path.replace(/^\//, ''), apiConfig.baseUrl).toString();
   const options = { method, headers: { 'Content-Type': 'application/json' } };
   if (method !== 'GET') options.body = JSON.stringify(body || {});
-  const res = await fetch(path, options);
+  const res = await fetch(requestUrl, options);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
+}
+
+function resolveApiConfig() {
+  const queryApi = new URLSearchParams(window.location.search).get('api');
+  if (queryApi) {
+    localStorage.setItem('bestFightingApiBase', queryApi);
+    return { baseUrl: normalizeApiBase(queryApi), error: null };
+  }
+
+  const persistedApi = localStorage.getItem('bestFightingApiBase');
+  if (persistedApi) return { baseUrl: normalizeApiBase(persistedApi), error: null };
+
+  const metaApi = document.querySelector('meta[name="best-fighting-api-base"]')?.content?.trim();
+  if (metaApi) return { baseUrl: normalizeApiBase(metaApi), error: null };
+
+  if (window.location.hostname.endsWith('github.io')) {
+    return {
+      baseUrl: null,
+      error: 'Signaling API is not configured. Paste your backend URL below and click Save API URL.'
+    };
+  }
+
+  return { baseUrl: normalizeApiBase(window.location.origin), error: null };
+}
+
+function normalizeApiBase(value) {
+  const parsed = new URL(value, window.location.origin);
+  return parsed.toString().endsWith('/') ? parsed.toString() : `${parsed.toString()}/`;
+}
+
+function refreshApiUi() {
+  apiBaseInput.value = apiConfig.baseUrl || localStorage.getItem('bestFightingApiBase') || '';
+  if (apiConfig.baseUrl) {
+    apiHintEl.textContent = `Signaling API: ${apiConfig.baseUrl}`;
+    document.getElementById('createRoomBtn').disabled = false;
+    document.getElementById('joinRoomBtn').disabled = false;
+  } else {
+    apiHintEl.textContent = apiConfig.error;
+    document.getElementById('createRoomBtn').disabled = true;
+    document.getElementById('joinRoomBtn').disabled = true;
+  }
 }
 
 function renderFighterCards() {
@@ -293,7 +341,34 @@ document.getElementById('joinRoomBtn').onclick = async () => {
 };
 
 window.addEventListener('beforeunload', () => {
-  if (state.clientId) navigator.sendBeacon('/api/leave', JSON.stringify({ clientId: state.clientId }));
+  if (state.clientId && apiConfig.baseUrl) {
+    navigator.sendBeacon(new URL('api/leave', apiConfig.baseUrl).toString(), JSON.stringify({ clientId: state.clientId }));
+  }
 });
 
-renderFighterCards(); bindControls(); requestAnimationFrame(tick); initSession();
+saveApiBtn.onclick = async () => {
+  const raw = apiBaseInput.value.trim();
+  if (!raw) {
+    localStorage.removeItem('bestFightingApiBase');
+  } else {
+    localStorage.setItem('bestFightingApiBase', raw);
+  }
+
+  apiConfig = resolveApiConfig();
+  refreshApiUi();
+
+  if (apiConfig.baseUrl && !state.clientId) {
+    try {
+      await initSession();
+    } catch (e) {
+      statusEl.textContent = e.message;
+    }
+  }
+};
+
+refreshApiUi();
+if (apiConfig.baseUrl) {
+  initSession().catch((e) => { statusEl.textContent = e.message; });
+}
+
+renderFighterCards(); bindControls(); requestAnimationFrame(tick);

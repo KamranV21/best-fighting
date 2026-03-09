@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="best-fighting-api-base" content="" />
     <title>Best Fighting</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -20,6 +21,11 @@
           <input id="roomCodeInput" maxlength="6" placeholder="ROOM ID" />
           <button id="joinRoomBtn">Join Room</button>
         </div>
+        <div class="api-controls">
+          <input id="apiBaseInput" placeholder="SIGNALING API URL (https://your-api-host/)" />
+          <button id="saveApiBtn">Save API URL</button>
+        </div>
+        <p id="apiHint" class="hint"></p>
         <p id="comboHint" class="hint"></p>
       </section>
 
