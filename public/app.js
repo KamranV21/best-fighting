@@ -45,8 +45,7 @@ function makeInitialGameState() {
 let apiConfig = resolveApiConfig();
 
 async function api(path, body, method = 'POST') {
-  if (!apiConfig.baseUrl) throw new Error(apiConfig.error);
-  const requestUrl = new URL(path.replace(/^\//, ''), apiConfig.baseUrl).toString();
+  const requestUrl = new URL(path.replace(/^\//, ''), getApiBaseUrl()).toString();
   const options = { method, headers: { 'Content-Type': 'application/json' } };
   if (method !== 'GET') options.body = JSON.stringify(body || {});
   const res = await fetch(requestUrl, options);
@@ -55,45 +54,21 @@ async function api(path, body, method = 'POST') {
   return data;
 }
 
-function resolveApiConfig() {
+function getApiBaseUrl() {
   const queryApi = new URLSearchParams(window.location.search).get('api');
   if (queryApi) {
     localStorage.setItem('bestFightingApiBase', queryApi);
-    return { baseUrl: normalizeApiBase(queryApi), error: null };
+    return ensureTrailingSlash(queryApi);
   }
 
   const persistedApi = localStorage.getItem('bestFightingApiBase');
-  if (persistedApi) return { baseUrl: normalizeApiBase(persistedApi), error: null };
+  if (persistedApi) return ensureTrailingSlash(persistedApi);
 
-  const metaApi = document.querySelector('meta[name="best-fighting-api-base"]')?.content?.trim();
-  if (metaApi) return { baseUrl: normalizeApiBase(metaApi), error: null };
-
-  if (window.location.hostname.endsWith('github.io')) {
-    return {
-      baseUrl: null,
-      error: 'Signaling API is not configured. Paste your backend URL below and click Save API URL.'
-    };
-  }
-
-  return { baseUrl: normalizeApiBase(window.location.origin), error: null };
+  return ensureTrailingSlash(window.location.href);
 }
 
-function normalizeApiBase(value) {
-  const parsed = new URL(value, window.location.origin);
-  return parsed.toString().endsWith('/') ? parsed.toString() : `${parsed.toString()}/`;
-}
-
-function refreshApiUi() {
-  apiBaseInput.value = apiConfig.baseUrl || localStorage.getItem('bestFightingApiBase') || '';
-  if (apiConfig.baseUrl) {
-    apiHintEl.textContent = `Signaling API: ${apiConfig.baseUrl}`;
-    document.getElementById('createRoomBtn').disabled = false;
-    document.getElementById('joinRoomBtn').disabled = false;
-  } else {
-    apiHintEl.textContent = apiConfig.error;
-    document.getElementById('createRoomBtn').disabled = true;
-    document.getElementById('joinRoomBtn').disabled = true;
-  }
+function ensureTrailingSlash(url) {
+  return url.endsWith('/') ? url : `${url}/`;
 }
 
 function renderFighterCards() {
@@ -341,8 +316,8 @@ document.getElementById('joinRoomBtn').onclick = async () => {
 };
 
 window.addEventListener('beforeunload', () => {
-  if (state.clientId && apiConfig.baseUrl) {
-    navigator.sendBeacon(new URL('api/leave', apiConfig.baseUrl).toString(), JSON.stringify({ clientId: state.clientId }));
+  if (state.clientId) {
+    navigator.sendBeacon(new URL('api/leave', getApiBaseUrl()).toString(), JSON.stringify({ clientId: state.clientId }));
   }
 });
 
