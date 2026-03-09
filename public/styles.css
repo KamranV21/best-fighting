@@ -60,6 +60,17 @@ h1 {
   flex-wrap: wrap;
   margin-top: 12px;
 }
+.api-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+#apiBaseInput {
+  min-width: 320px;
+  flex: 1;
+  text-transform: none;
+}
 button, input {
   font-family: inherit;
   font-size: 14px;

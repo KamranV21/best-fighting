@@ -14,6 +14,9 @@ const roomCodeInput = document.getElementById('roomCodeInput');
 const roomCodeLabel = document.getElementById('roomCodeLabel');
 const lobbyStatus = document.getElementById('lobbyStatus');
 const announcementEl = document.getElementById('announcement');
+const apiBaseInput = document.getElementById('apiBaseInput');
+const saveApiBtn = document.getElementById('saveApiBtn');
+const apiHintEl = document.getElementById('apiHint');
 const timerEl = document.getElementById('roundTimer');
 const p1Name = document.getElementById('p1Name');
 const p2Name = document.getElementById('p2Name');
@@ -38,6 +41,8 @@ function makeInitialGameState() {
     { x: 680, y: 390, vx: 0, vy: 0, hp: 100, wins: 0, attacking: 0, crouch: false, fighter: fighters[1], facing: -1 }
   ]};
 }
+
+let apiConfig = resolveApiConfig();
 
 async function api(path, body, method = 'POST') {
   const requestUrl = new URL(path.replace(/^\//, ''), getApiBaseUrl()).toString();
@@ -316,4 +321,29 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
-renderFighterCards(); bindControls(); requestAnimationFrame(tick); initSession();
+saveApiBtn.onclick = async () => {
+  const raw = apiBaseInput.value.trim();
+  if (!raw) {
+    localStorage.removeItem('bestFightingApiBase');
+  } else {
+    localStorage.setItem('bestFightingApiBase', raw);
+  }
+
+  apiConfig = resolveApiConfig();
+  refreshApiUi();
+
+  if (apiConfig.baseUrl && !state.clientId) {
+    try {
+      await initSession();
+    } catch (e) {
+      statusEl.textContent = e.message;
+    }
+  }
+};
+
+refreshApiUi();
+if (apiConfig.baseUrl) {
+  initSession().catch((e) => { statusEl.textContent = e.message; });
+}
+
+renderFighterCards(); bindControls(); requestAnimationFrame(tick);

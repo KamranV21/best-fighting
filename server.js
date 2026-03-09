@@ -84,6 +84,14 @@ function parseBody(req) {
   });
 }
 
+function setCorsHeaders(req, res) {
+  const origin = req.headers.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
 function sendJson(res, code, payload) {
   const data = JSON.stringify(payload);
   res.writeHead(code, {
@@ -119,6 +127,12 @@ function serveStatic(urlPath, res) {
 }
 
 async function handleApi(req, res, pathname, urlObj) {
+  setCorsHeaders(req, res);
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
   if (pathname === '/api/session' && req.method === 'POST') {
     const clientId = nextClientId();
     clients.set(clientId, { roomId: null, messages: [] });
